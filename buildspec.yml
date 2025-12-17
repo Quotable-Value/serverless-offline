@@ -1,0 +1,60 @@
+version: 0.2
+env:
+  shell: bash
+  exported-variables:
+    - COMMIT_EMAIL
+    - COMMIT_SHA
+    - COMMIT_MESSAGE
+    - SLACK_USER
+    - BUILD_VERSION
+    - BUILD_BRANCH
+    - RELATIVE_REPORT_PATH
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain quotable-value --domain-owner 948396734470 --region ap-southeast-2 --query authorizationToken --output text`
+      - npm install --include=dev
+
+  pre_build:
+    commands:
+      - aws s3 cp s3://qv-deployment/build-scripts/project_buildspec_env_vars.sh env_vars.sh && chmod +x env_vars.sh && . ./env_vars.sh
+      - '[ -n "$BUILD_VERSION" ] || (echo "BUILD_VERSION IS NOT SET, EXITING..." && false)'
+      - |
+        if [ -n "$(git describe --exact-match --tags 2>/dev/null)" ]; then
+          echo "Build is tagged"
+          TAGGED_BUILD=true
+        else
+          echo "Build is not tagged"
+          TAGGED_BUILD=false
+        fi
+      - export ALT_TAG=$(echo "$CODEBUILD_GIT_BRANCH")
+      - echo "Alternative tag is $ALT_TAG"
+  build:
+    commands:
+      - |
+        if [ "$TAGGED_BUILD" = true ]; then
+          export PACKAGE_VERSION="$CODEBUILD_GIT_TAG";
+        else
+          export PACKAGE_VERSION="$(git describe --tags || echo "0.0.0-$(git rev-parse --short HEAD)")";
+        fi
+      - export PACKAGE_VERSION=$(echo "$PACKAGE_VERSION" | tr -d '_')
+      - npm version $PACKAGE_VERSION --no-git-tag-version
+      - npm run coverage:report || true
+      - npm run build
+      - echo "Using version $PACKAGE_VERSION..."
+      - echo "Publishing to CodeArtifact..."
+      - |
+        if [ "$TAGGED_BUILD" = true ]; then
+          npm publish --tag latest
+        else
+          npm publish --tag snapshot --tag $ALT_TAG
+        fi
+  post_build:
+    commands:
+      - aws s3 cp s3://qv-deployment/build-scripts/create_test_report.sh create_test_report.sh && chmod +x create_test_report.sh
+      - . ./create_test_report.sh "$PROJECT_NAME" "build" "coverage" "$BUILD_BRANCH" "$BUILD_VERSION" "$COMMIT_SHA"
+      - if [ -n "$REPORT_FOLDER" ]; then echo "REPORT_FOLDER is set and not empty"; else echo "REPORT_FOLDER is unset or empty"; exit 1; fi
+      - aws s3 cp coverage/ s3://$REPORT_FOLDER --recursive || true
+      - echo "Uploading coverage test report completed"
