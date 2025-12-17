@@ -10,7 +10,7 @@ const serverlessPath = join(
 
 let serverlessProcess
 
-const shouldPrintOfflineOutput = false
+const shouldPrintOfflineOutput = env.PRINT_OFFLINE_OUTPUT
 
 export async function setup(options) {
   const { args = [], env: optionsEnv, servicePath, stdoutData } = options

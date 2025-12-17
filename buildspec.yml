@@ -12,7 +12,7 @@ env:
 phases:
   install:
     runtime-versions:
-      nodejs: 20
+      nodejs: 24
     commands:
       - export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain quotable-value --domain-owner 948396734470 --region ap-southeast-2 --query authorizationToken --output text`
       - npm install --include=dev
