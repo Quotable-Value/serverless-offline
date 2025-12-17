@@ -41,8 +41,6 @@ phases:
         fi
       - export PACKAGE_VERSION=$(echo "$PACKAGE_VERSION" | tr -d '_')
       - npm version $PACKAGE_VERSION --no-git-tag-version
-      - npm run coverage:report || true
-      - npm run build
       - echo "Using version $PACKAGE_VERSION..."
       - echo "Publishing to CodeArtifact..."
       - |
