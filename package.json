@@ -1,5 +1,5 @@
 {
-  "name": "serverless-offline",
+  "name": "@quotable-value/serverless-offline",
   "version": "14.4.0",
   "description": "Emulate AWS λ and API Gateway locally when developing your Serverless project",
   "license": "MIT",
@@ -23,7 +23,12 @@
     "test:node": "TEST=node mocha --require ./tests/mochaHooks.cjs",
     "test:unit": "TEST=unit mocha --require ./tests/mochaHooks.cjs",
     "test:e2e": "TEST=e2e mocha --require ./tests/mochaHooks.cjs",
-    "test:docker": "TEST=docker mocha --require ./tests/mochaHooks.cjs"
+    "test:docker": "TEST=docker mocha --require ./tests/mochaHooks.cjs",
+    "test:cov:win": "set NODE_OPTIONS='--experimental-loader @istanbuljs/esm-loader-hook' && nyc --reporter=html npm test",
+    "test:node:win": "set TEST=node && mocha --require ./tests/mochaHooks.cjs",
+    "test:unit:win": "set TEST=unit && mocha --require ./tests/mochaHooks.cjs",
+    "test:e2e:win": "set TEST=e2e && mocha --require ./tests/mochaHooks.cjs",
+    "test:docker:win": "set TEST=docker && mocha --require ./tests/mochaHooks.cjs"
   },
   "repository": {
     "type": "git",
@@ -116,9 +121,9 @@
     "mocha": "^10.7.3",
     "nyc": "^17.0.0",
     "prettier": "^3.3.3",
-    "serverless": "^4.2.1"
+    "serverless": "npm:@quotable-value/serverless@3.40.1"
   },
   "peerDependencies": {
-    "serverless": "^4.0.0"
+    "@quotable-value/serverless": "^3.40.1"
   }
 }
