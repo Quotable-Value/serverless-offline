@@ -3,7 +3,7 @@
   "type": "module",
   "exports": "./src/index.js",
   "dependencies": {
-    "@apollo/gateway": "^2.8.2",
+    "@apollo/gateway": "^2.14.2",
     "@apollo/server": "^4.10.4",
     "@apollo/subgraph": "^2.8.2",
     "@as-integrations/aws-lambda": "^3.1.0",
