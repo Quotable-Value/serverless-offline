@@ -45,7 +45,11 @@ phases:
       - echo "Publishing to CodeArtifact..."
       - |
         if [ "$TAGGED_BUILD" = true ]; then
-          npm publish --tag latest
+          if [[ "$PACKAGE_VERSION" == *-security.* ]]; then
+            npm publish --tag security
+          else
+            npm publish --tag latest
+          fi
         else
           npm publish --tag snapshot --tag $ALT_TAG
         fi
